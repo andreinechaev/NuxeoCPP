@@ -8,15 +8,8 @@
 nx::Authentication::Authentication(nx::AuthType type, const std::string &username, const std::string &auth): _auth(username, auth) {
 }
 
-bool nx::Authentication::operator==(const nx::Authentication &rhs) const {
-    return _auth.getUsername() == rhs.get_auth().getUsername();
-}
 
-bool nx::Authentication::operator!=(const nx::Authentication &rhs) const {
-    return !(rhs == *this);
-}
-
-const Net::HTTPCredentials& nx::Authentication::get_auth() const {
+Net::HTTPBasicCredentials& nx::Authentication::get_auth() {
     return _auth;
 }
 

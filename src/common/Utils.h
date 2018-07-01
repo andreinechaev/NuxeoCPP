@@ -5,16 +5,16 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 #include <map>
 
 template <typename K, typename V>
 static std::string map_to_string(std::map<K, V> m) {
-    std::string out{"{\n"};
-
+    std::ostringstream oss;
+    oss << "{\n";
     for (auto pair : m) {
-        out += "\t" + pair.first + ": " + pair.second + "\n";
+        oss << "\t" + pair.first + ": " + pair.second + ",\n";
     }
-
-    out += "}";
-    return out;
+    oss << "}";
+    return oss.str();
 };

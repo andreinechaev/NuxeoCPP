@@ -5,9 +5,15 @@
 #pragma once
 
 #include <ostream>
+#include <sstream>
+#include <iterator>
+#include <vector>
+#include <string>
 #include "Authentication.h"
 #include "../common/Utils.h"
 #include "../common/Constants.h"
+#include "../net/HTTPConnection.h"
+#include "../api/NuxeoAPI.h"
 
 namespace nx {
 
@@ -31,23 +37,29 @@ namespace nx {
         }
     };
 
-    struct Properties {
-
-    };
-
     class Nuxeo {
     public:
         class Builder;
 
         virtual ~Nuxeo() = default;
 
-        void request() {
+        void request(api::API &func) {
+            auto method = func.get_method();
+            auto path = func.get_path();
+            auto params = func.get_parameters();
 
+            net::HTTPConnection connection(_host, _port);
+
+            Net::HTTPResponse resp;
+            auto endpoint = _api_path + path;
+            auto resp_str = connection.request(method, endpoint, _auth.get_auth(), _headers, resp, params);
+//            if (DEBUG) {
+                std::cout << "Response: " << resp_str << std::endl;
+//            }
         }
 
         bool operator==(const Nuxeo &rhs) const {
             return _host == rhs._host &&
-                   _auth == rhs._auth &&
                    _headers == rhs._headers;
         }
 
@@ -56,16 +68,18 @@ namespace nx {
         }
 
         friend std::ostream &operator<<(std::ostream &os, const Nuxeo &nuxeo) {
-            os << "_host: " << nuxeo._host << " _auth: " << nuxeo._auth << " headers_t: " << map_to_string(nuxeo._headers);
+            os << "_host: " << nuxeo._host << " headers_t: " << map_to_string(nuxeo._headers);
             return os;
         }
 
     private:
-        Nuxeo(std::string &host, headers_t& head, nx::Authentication &auth) : _host(host), _auth(auth), _headers(head) {}
+        Nuxeo(std::string &host, uint16_t port, headers_t& head, nx::Authentication &auth) : _host(host), _port(port), _auth(auth), _headers(head), _api_path(DEFAULT_API_PATH) {}
 
         std::string _host;
+        uint16_t _port;
         nx::Authentication _auth;
         headers_t _headers;
+        std::string _api_path;
     };
 
     class Nuxeo::Builder {
@@ -77,8 +91,6 @@ namespace nx {
 
         static const constexpr char *_default_pass = "Administrator";
 
-        static const constexpr char *_default_host = "http://localhost:8080/nuxeo";
-
         headers_t _headers;
 
         AuthType _auth_type;
@@ -89,18 +101,54 @@ namespace nx {
 
         std::string _host;
 
+        uint16_t _port;
+
     public:
         Builder();
 
-        virtual ~Builder() {};
+        virtual ~Builder() = default;;
+
+        Builder &set_host(const std::string &host) {
+            this->_host = host;
+            return *this;
+        }
+
+        Builder &set_port(const uint16_t port) {
+            this->_port = port;
+            return *this;
+        }
 
         Builder &set_headers(const headers_t &h) {
-            this->_headers = h;
+            if (h.empty()) {
+                this->_headers = h;
+            } else {
+                this->_headers.insert(h.begin(), h.end());
+            }
+
             return *this;
         }
 
         Builder &set_nuxeo_headers(const headers_t &h) {
             this->_headers.insert(h.begin(), h.end());
+            return *this;
+        }
+
+        Builder &set_enrichers(const std::vector<std::string> &enrichers) {
+            const char *delim = ", ";
+
+            std::ostringstream ss;
+            std::copy(enrichers.begin(), enrichers.end(), std::ostream_iterator<std::string>(ss, delim));
+
+            return *this;
+        }
+
+        Builder &set_client_version(const std::string &version) {
+            this->_headers["X-Application-Name"] = version;
+            return *this;
+        }
+
+        Builder &set_application_name(const std::string &name) {
+            _headers["X-Application-Name"] = "C++ Client";
             return *this;
         }
 
@@ -119,14 +167,9 @@ namespace nx {
             return *this;
         }
 
-        Builder &set_host(const std::string &host) {
-            this->_host = host;
-            return *this;
-        }
-
         Nuxeo build() {
             Authentication auth(this->_auth_type, this->_user, this->_pass);
-            return Nuxeo(this->_host, this->_headers, auth);
+            return Nuxeo(this->_host, this->_port, this->_headers, auth);
         }
     };
 }

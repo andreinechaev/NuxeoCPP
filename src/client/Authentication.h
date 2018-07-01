@@ -6,7 +6,7 @@
 
 #include <string>
 #include <ostream>
-#include <Poco/Net/HTTPCredentials.h>
+#include <Poco/Net/HTTPBasicCredentials.h>
 
 using namespace Poco;
 
@@ -24,18 +24,14 @@ namespace nx {
 
         virtual ~Authentication();
 
-        const Net::HTTPCredentials& get_auth() const;
+        Net::HTTPBasicCredentials& get_auth();
 
-        bool operator==(const Authentication &rhs) const;
-
-        bool operator!=(const Authentication &rhs) const;
-
-        friend std::ostream& operator<<(std::ostream &os, const Authentication &authentication) {
+        friend std::ostream& operator<<(std::ostream &os, Authentication &authentication) {
             os << authentication.get_auth().getUsername();
             return os;
         }
 
     private:
-        Net::HTTPCredentials _auth;
+        Net::HTTPBasicCredentials _auth;
     };
 }
