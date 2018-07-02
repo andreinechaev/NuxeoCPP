@@ -30,4 +30,6 @@ namespace nx {
     static const constexpr char* QUERY_API_NAME = "query";
 
     static const constexpr char* NXQL_SEARCH_API_PATH = "search/lang/NXQL/execute";
+
+    static const constexpr char* ENTRIES_JSON_PARAM = "entries";
 }

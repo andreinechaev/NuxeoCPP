@@ -14,13 +14,15 @@
 #include "../common/Constants.h"
 #include "../net/HTTPConnection.h"
 #include "../api/NuxeoAPI.h"
+#include <Poco/JSON/JSON.h>
+#include <Poco/JSON/Parser.h>
 
 namespace nx {
 
     struct Headers {
         static headers_t get() {
             headers_t h{};
-            h["X-Application-Name"] = "C++ Client";
+            h["X-Application-Name"] = DEFAULT_APP_NAME;
             h["X-Client-Version"] = "0.0.1-SNAPSHOT";
             h["User-Agent"] = "C++ Client/0.0.1-SNAPSHOT";
             h["Accept"] = "application/json+nxentity, */*";
@@ -53,9 +55,19 @@ namespace nx {
             Net::HTTPResponse resp;
             auto endpoint = _api_path + path;
             auto resp_str = connection.request(method, endpoint, _auth.get_auth(), _headers, resp, params);
-//            if (DEBUG) {
-                std::cout << "Response: " << resp_str << std::endl;
-//            }
+
+            std::cout << "Response: " << resp_str << std::endl;
+
+            // TODO: Find a btter way to use JSON parser. Parser should be replacable aka not more than an interface.
+            Poco::JSON::Parser parser;
+            auto res = parser.parse(resp_str);
+            const auto &ex = res.extract<Poco::JSON::Object::Ptr>();
+            if (ex->has(ENTRIES_JSON_PARAM)) {
+                auto entries = ex->getArray(ENTRIES_JSON_PARAM);
+                std::ostringstream oss;
+                entries->stringify(oss);
+                std::cout << "Entries " << oss.str() << std::endl;
+            }
         }
 
         bool operator==(const Nuxeo &rhs) const {
