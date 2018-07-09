@@ -23,8 +23,8 @@ namespace nx {
         static headers_t get() {
             headers_t h{};
             h["X-Application-Name"] = DEFAULT_APP_NAME;
-            h["X-Client-Version"] = "0.0.1-SNAPSHOT";
-            h["User-Agent"] = "C++ Client/0.0.1-SNAPSHOT";
+            h["X-Client-Version"] = VERSION;
+            h["User-Agent"] = std::string(DEFAULT_APP_NAME) + "/" + VERSION;
             h["Accept"] = "application/json+nxentity, */*";
 
             return h;

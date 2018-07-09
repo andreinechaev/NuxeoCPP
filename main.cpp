@@ -4,8 +4,6 @@
 
 using namespace nx;
 
-#define DEBUG = true;
-
 int main() {
     Nuxeo nuxeo = Nuxeo::Builder().build();
     api::Document::Query query("SELECT * FROM Document");

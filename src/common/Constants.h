@@ -6,18 +6,20 @@
 
 #include <string>
 
-#define DEBUG false
+#define DEBUG true
 
 typedef std::map<std::string, std::string> headers_t;
 
 typedef std::map<std::string, std::string> params_t;
 
 namespace nx {
+    static const constexpr char* VERSION = "0.0.1-SNAPSHOT";
+
     static const constexpr char* DEFAULT_API_PATH = "/nuxeo/api/v1/";
 
     static const constexpr char* DEFAULT_APP_NAME = "C++ Client";
 
-    static const constexpr char* DEFAULT_URL = "localhost";
+    static const constexpr char* DEFAULT_URL = "127.0.0.1";
 
     static const constexpr uint16_t DEFAULT_PORT = 8080;
 
